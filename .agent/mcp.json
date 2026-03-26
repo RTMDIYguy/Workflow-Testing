@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "ui": {
+      "enabled": true,
+      "description": "Browser-based UI capabilities including visual components, voice assistance, and memory bank"
+    },
+    "googledrive": {
+      "url": "https://api.agentplace.io/mcp/ext/googledrive/t_jROtVEiXiXxTpsmlPNa1p4EUABUfsQpK",
+      "headers": {
+        "X-MCP-Auth": "s_Gh5ozhVlAzsU8WAW1RMSEQ69l1FTkXpXuwwdSxKQLAc"
+      }
+    },
+    "notion": {
+      "url": "https://api.agentplace.io/mcp/ext/notion/t_qpA_NQhZyE42Qps0wXotGN5qkyMWyk89",
+      "headers": {
+        "X-MCP-Auth": "s_3khyADRIyjC_3qSO0Hi-sDA86FrgETRpatS-oQpYx0o"
+      }
+    }
+  }
+}
