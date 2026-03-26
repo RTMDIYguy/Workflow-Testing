@@ -147,18 +147,21 @@ type ResearchBriefProps = {
   actionItems?: string[];
 };
 
+// ── Static styles (module scope — not recreated per render) ──────────────────
+
+const IMPORTANCE_STYLES: Record<string, string> = {
+  high: 'bg-[hsl(var(--red-bg))] text-[hsl(var(--red-soft))] border-[hsl(var(--red-soft)/0.2)]',
+  medium:
+    'bg-[hsl(var(--amber-bg))] text-[hsl(var(--amber-soft))] border-[hsl(var(--amber-soft)/0.2)]',
+  low: 'bg-[hsl(var(--blue-bg))] text-[hsl(var(--blue-soft))] border-[hsl(var(--blue-soft)/0.2)]',
+};
+
 // ── Subcomponents ────────────────────────────────────────────────────────────
 
 const ImportanceBadge: FC<{ level: string }> = ({ level }) => {
-  const styles: Record<string, string> = {
-    high: 'bg-[hsl(var(--red-bg))] text-[hsl(var(--red-soft))] border-[hsl(var(--red-soft)/0.2)]',
-    medium:
-      'bg-[hsl(var(--amber-bg))] text-[hsl(var(--amber-soft))] border-[hsl(var(--amber-soft)/0.2)]',
-    low: 'bg-[hsl(var(--blue-bg))] text-[hsl(var(--blue-soft))] border-[hsl(var(--blue-soft)/0.2)]',
-  };
   return (
     <span
-      className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${styles[level] || styles.low}`}
+      className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${IMPORTANCE_STYLES[level] || IMPORTANCE_STYLES.low}`}
     >
       {level}
     </span>
@@ -174,17 +177,20 @@ const CollapsibleSection: FC<{
   children: React.ReactNode;
 }> = ({ title, icon, count, accentColor, defaultOpen = false, children }) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
+  const sectionId = `section-${title.replace(/\s+/g, '-').toLowerCase()}`;
 
   return (
     <div className="border border-border/60 rounded-lg overflow-hidden transition-all duration-200">
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
+        aria-expanded={isOpen}
+        aria-controls={sectionId}
         className={`w-full flex items-center justify-between px-4 py-3 text-left transition-colors duration-150 hover:bg-muted/50 ${accentColor}`}
       >
         <div className="flex items-center gap-2.5">
           {icon}
-          <span className="font-semibold text-sm text-foreground" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+          <span className="font-semibold text-sm text-foreground">
             {title}
           </span>
           <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-muted text-muted-foreground text-xs font-medium">
@@ -197,7 +203,7 @@ const CollapsibleSection: FC<{
           <ChevronDown className="w-4 h-4 text-muted-foreground" />
         )}
       </button>
-      {isOpen && <div className="px-4 pb-4 pt-2">{children}</div>}
+      {isOpen && <div id={sectionId} className="px-4 pb-4 pt-2">{children}</div>}
     </div>
   );
 };
@@ -229,6 +235,24 @@ const ResearchBriefComponent: FC<AsArgumentsProps<ResearchBriefProps>> = ({
 
   const flagCount = missingContext.length + conflicts.length + openQuestions.length;
 
+  const handleSaveToNotion = () => {
+    handleSendMessage({
+      instruction: JSON.stringify({
+        action: 'save_brief_to_notion',
+        title,
+        sourceDocument,
+        documentType,
+        dateAnalyzed,
+        executiveSummary,
+        keyFindings,
+        missingContext,
+        conflicts,
+        openQuestions,
+        actionItems,
+      }),
+    });
+  };
+
   return (
     <div className="w-full max-w-full pb-12" style={{ fontFamily: "'DM Sans', sans-serif" }}>
       <Card className="overflow-hidden border border-border/50 bg-card/80 backdrop-blur-sm shadow-sm">
@@ -239,7 +263,7 @@ const ResearchBriefComponent: FC<AsArgumentsProps<ResearchBriefProps>> = ({
 
           <div className="flex items-start gap-3.5">
             <div className="flex-shrink-0 mt-0.5 w-9 h-9 rounded-lg bg-[hsl(var(--amber-bg))] flex items-center justify-center">
-              <BookOpen className="w-4.5 h-4.5 text-[hsl(var(--amber-soft))]" />
+              <BookOpen className="w-5 h-5 text-[hsl(var(--amber-soft))]" />
             </div>
             <div className="flex-1 min-w-0">
               <h2
@@ -283,10 +307,7 @@ const ResearchBriefComponent: FC<AsArgumentsProps<ResearchBriefProps>> = ({
 
         {/* ── Executive Summary ───────────────────────────────────── */}
         <div className="px-5 py-4 border-t border-border/40">
-          <h3
-            className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2"
-            style={{ fontFamily: "'DM Sans', sans-serif" }}
-          >
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
             Executive Summary
           </h3>
           <p className="text-sm text-foreground/90 leading-relaxed">{executiveSummary}</p>
@@ -295,19 +316,16 @@ const ResearchBriefComponent: FC<AsArgumentsProps<ResearchBriefProps>> = ({
         {/* ── Key Findings ────────────────────────────────────────── */}
         {keyFindings.length > 0 && (
           <div className="px-5 py-4 border-t border-border/40">
-            <h3
-              className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3"
-              style={{ fontFamily: "'DM Sans', sans-serif" }}
-            >
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
               Key Findings
             </h3>
             <div className="space-y-2.5">
               {keyFindings.map((item, idx) => (
                 <div
-                  key={idx}
+                  key={`finding-${idx}-${item.finding?.slice(0, 20)}`}
                   className="group flex items-start gap-3 p-3 rounded-lg bg-muted/30 border border-border/30 transition-colors duration-150 hover:bg-muted/50"
                 >
-                  <div className="flex-shrink-0 mt-0.5 w-5 h-5 rounded-full bg-primary/8 flex items-center justify-center">
+                  <div className="flex-shrink-0 mt-0.5 w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center">
                     <Lightbulb className="w-3 h-3 text-[hsl(var(--amber-soft))]" />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -332,10 +350,7 @@ const ResearchBriefComponent: FC<AsArgumentsProps<ResearchBriefProps>> = ({
         {/* ── Flags Section ───────────────────────────────────────── */}
         {flagCount > 0 && (
           <div className="px-5 py-4 border-t border-border/40">
-            <h3
-              className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3"
-              style={{ fontFamily: "'DM Sans', sans-serif" }}
-            >
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
               Review Flags
             </h3>
             <div className="space-y-2.5">
@@ -350,7 +365,7 @@ const ResearchBriefComponent: FC<AsArgumentsProps<ResearchBriefProps>> = ({
                 >
                   <ul className="space-y-1.5">
                     {missingContext.map((item, idx) => (
-                      <li key={idx} className="flex items-start gap-2 text-sm text-foreground/85">
+                      <li key={`context-${idx}-${item?.slice(0, 20)}`} className="flex items-start gap-2 text-sm text-foreground/85">
                         <ArrowRight className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-[hsl(var(--amber-soft))]" />
                         <span>{item}</span>
                       </li>
@@ -370,7 +385,7 @@ const ResearchBriefComponent: FC<AsArgumentsProps<ResearchBriefProps>> = ({
                 >
                   <ul className="space-y-2">
                     {conflicts.map((item, idx) => (
-                      <li key={idx} className="flex items-start gap-2 text-sm">
+                      <li key={`conflict-${idx}-${item.description?.slice(0, 20)}`} className="flex items-start gap-2 text-sm">
                         <ArrowRight className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-[hsl(var(--red-soft))]" />
                         <div>
                           <span className="text-foreground/85">{item.description}</span>
@@ -397,7 +412,7 @@ const ResearchBriefComponent: FC<AsArgumentsProps<ResearchBriefProps>> = ({
                 >
                   <ul className="space-y-1.5">
                     {openQuestions.map((item, idx) => (
-                      <li key={idx} className="flex items-start gap-2 text-sm text-foreground/85">
+                      <li key={`question-${idx}-${item?.slice(0, 20)}`} className="flex items-start gap-2 text-sm text-foreground/85">
                         <ArrowRight className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-[hsl(var(--blue-soft))]" />
                         <span>{item}</span>
                       </li>
@@ -412,16 +427,13 @@ const ResearchBriefComponent: FC<AsArgumentsProps<ResearchBriefProps>> = ({
         {/* ── Action Items ────────────────────────────────────────── */}
         {actionItems && actionItems.length > 0 && (
           <div className="px-5 py-4 border-t border-border/40">
-            <h3
-              className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3"
-              style={{ fontFamily: "'DM Sans', sans-serif" }}
-            >
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
               Suggested Next Steps
             </h3>
             <div className="space-y-1.5">
               {actionItems.map((item, idx) => (
                 <div
-                  key={idx}
+                  key={`action-${idx}-${item?.slice(0, 20)}`}
                   className="flex items-start gap-2.5 p-2 rounded-md bg-[hsl(var(--green-bg)/0.4)] border border-[hsl(var(--green-soft)/0.12)]"
                 >
                   <span className="flex-shrink-0 mt-0.5 w-5 h-5 rounded-full bg-[hsl(var(--green-soft)/0.12)] flex items-center justify-center text-xs font-semibold text-[hsl(var(--green-soft))]">
@@ -446,15 +458,7 @@ const ResearchBriefComponent: FC<AsArgumentsProps<ResearchBriefProps>> = ({
             </span>
             <button
               type="button"
-              onClick={() =>
-                handleSendMessage({
-                  instruction: JSON.stringify({
-                    action: 'save_brief_to_notion',
-                    title,
-                    sourceDocument,
-                  }),
-                })
-              }
+              onClick={handleSaveToNotion}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors duration-150"
             >
               <ExternalLink className="w-3 h-3" />

@@ -10,6 +10,7 @@
   --primary: 222 47% 18%;
   --primary-foreground: 40 25% 97%;
   --secondary: 222 20% 25%;
+  --secondary-foreground: 40 25% 97%;
   --muted: 38 18% 93%;
   --muted-foreground: 222 15% 42%;
 
@@ -67,4 +68,10 @@
   --blue-bg: 222 50% 96%;
   --green-soft: 152 60% 36%;
   --green-bg: 152 40% 95%;
+
+  /* Markdown/content tokens */
+  --content-primary: 222 47% 11%;
+  --text-secondary: 222 15% 42%;
+  --border-medium: hsl(38 20% 85%);
+  --border-light: hsl(38 20% 90%);
 }

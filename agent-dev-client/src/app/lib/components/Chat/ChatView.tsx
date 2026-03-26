@@ -186,10 +186,8 @@ export const ChatView: FC<Props> = observer(
         {/* Background - Research Assistant Scholarly Theme */}
         <div className="absolute inset-0 bg-background">
           {/* Subtle warm radial glow */}
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,hsl(38_30%_94%/0.8),transparent_60%)]" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,hsl(222_30%_94%/0.5),transparent_60%)]" />
-          {/* Fine grain texture overlay */}
-          <div className="absolute inset-0 opacity-[0.015]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'6\' height=\'6\' viewBox=\'0 0 6 6\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'%23000\' fill-opacity=\'1\' fill-rule=\'evenodd\'%3E%3Cpath d=\'M5 0h1L0 5V4zM6 5v1H5z\'/%3E%3C/g%3E%3C/svg%3E")' }} />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,hsl(var(--muted)/0.8),transparent_60%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,hsl(var(--blue-bg)/0.5),transparent_60%)]" />
         </div>
 
         {/* Content Layer */}
